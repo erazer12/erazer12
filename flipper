@@ -1,0 +1,64 @@
+# Importiere die benötigten Bibliotheken
+import flipper
+
+# Initialisiere das Flipper Zero Display
+display = flipper.Flipper()
+
+# Definiere die Spielfläche
+screen_width = display.width
+screen_height = display.height
+
+# Definiere die Schläger
+paddle_width = 2
+paddle_height = 8
+left_paddle_x = 0
+right_paddle_x = screen_width - paddle_width
+paddle_y = screen_height // 2 - paddle_height // 2
+paddle_speed = 2
+
+# Definiere den Ball
+ball_size = 2
+ball_x = screen_width // 2
+ball_y = screen_height // 2
+ball_dx = 1
+ball_dy = 1
+
+# Hauptspiel-Schleife
+while True:
+    # Lösche den vorherigen Frame
+    display.clear()
+
+    # Bewege die Schläger basierend auf Benutzereingaben
+    if display.button_a.is_pressed():
+        left_paddle_y -= paddle_speed
+    if display.button_b.is_pressed():
+        left_paddle_y += paddle_speed
+
+    # Begrenze die Schläger auf das Spielfeld
+    left_paddle_y = max(0, min(left_paddle_y, screen_height - paddle_height))
+
+    # Bewege den Ball
+    ball_x += ball_dx
+    ball_y += ball_dy
+
+    # Überprüfe auf Kollisionen mit den Spielfeldgrenzen
+    if ball_y <= 0 or ball_y + ball_size >= screen_height:
+        ball_dy *= -1
+    if ball_x <= 0 or ball_x + ball_size >= screen_width:
+        ball_dx *= -1
+
+    # Überprüfe auf Kollisionen mit den Schlägern
+    if ball_x <= paddle_width and left_paddle_y <= ball_y <= left_paddle_y + paddle_height:
+        ball_dx *= -1
+    elif ball_x + ball_size >= screen_width - paddle_width and paddle_y <= ball_y <= paddle_y + paddle_height:
+        ball_dx *= -1
+
+    # Rendere die Schläger
+    display.fill_rect(left_paddle_x, left_paddle_y, paddle_width, paddle_height, 1)
+    display.fill_rect(right_paddle_x, right_paddle_y, paddle_width, paddle_height, 1)
+
+    # Rendere den Ball
+    display.fill_rect(ball_x, ball_y, ball_size, ball_size, 1)
+
+    # Aktualisiere das Display
+    display.show()
